@@ -1,0 +1,82 @@
+﻿﻿-- Active: 1685714127393@@127.0.0.1@5432@tutorial@public
+CREATE TABLE humans(
+   id SERIAL PRIMARY KEY NOT NULL,
+   name TEXT NOT NULL,
+   age INTEGER,
+   password TEXT UNIQUE,
+   is_admin BOOLEAN DEFAULT false,
+   phones TEXT[]
+);
+
+ALTER TABLE humans
+ADD COLUMN
+balance INTEGER;
+
+ALTER TABLE humans
+ADD COLUMN
+phones TEXT[];
+
+DROP TABLE humans;
+INSERT INTO humans(name, is_admin, age) VALUES('jonibek', true, 52);
+
+UPDATE humans SET phones = '{"1313", "131313","131313"}'
+WHERE id = 1;
+
+UPDATE humans SET balance = 100000
+WHERE id = 1;
+
+DELETE from humans WHERE id = 1;
+
+SELECT * FROM humans;
+SELECT id, name FROM humans;
+SELECT age, id, name FROM humans;
+SELECT age, id AS user_id, is_admin AS admin FROM humans;
+
+SELECT * from humans
+WHERE name LIKE '%ali%';
+
+SELECT * FROM humans
+WHERE age in(22, 12, 52);
+
+SELECT * FROM humans
+WHERE age BETWEEN 10 and 30;
+
+SELECT * FROM humans ORDER BY name; -- ASC;
+SELECT * FROM humans ORDER BY age DESC;
+
+SELECT id, name FROM humans WHERE age > 18 or name = 'ali' ORDER BY age DESC LIMIT 10;
+
+----- VIEW
+
+CREATE OR REPLACE VIEW user_names AS SELECT id, name FROM humans WHERE age > 18 or name = 'ali' ORDER BY age DESC LIMIT 10;
+
+DROP VIEW user_names;
+
+SELECT * from user_names;
+
+CREATE OR REPLACE VIEW user_ages AS SELECT name, age FROM humans;
+DROP VIEW user_ages;
+
+SELECT * FROM user_ages;
+
+----- MATERIALIZED VIEW
+
+CREATE MATERIALIZED VIEW users_cache
+AS 
+SELECT * FROM humans
+WITH NO DATA;
+
+DROP MATERIALIZED VIEW users_cache;
+
+SELECT * FROM users_cache;
+
+REFRESH MATERIALIZED VIEW users_cache;
+
+CREATE MATERIALIZED VIEW user_names_cache
+AS 
+SELECT * FROM user_names
+WITH DATA;
+
+SELECT * FROM user_names_cache;
+
+-----
