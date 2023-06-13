@@ -1,0 +1,129 @@
+﻿CREATE TABLE authors (id SERIAL PRIMARY KEY, author_name TEXT NOT NULL, author_nation TEXT);
+DROP TABLE authors;
+
+CREATE TABLE books (id SERIAL PRIMARY KEY, book_name TEXT NOT NULL, page_number INTEGER);
+DROP TABLE books;
+
+INSERT INTO authors (author_name, author_nation) VALUES ('javohir' , 'ozbek');
+INSERT INTO books (book_name, page_number) VALUES ('daftar',24);
+
+DELETE FROM books WHERE book_name = 'kitob3';
+SELECT * FROM authors;
+SELECT * From books;
+
+--------------------------
+------- UPDATE -----------
+------- INSERT -----------
+------- DELETE -----------
+------- TRUNCATE ---------
+--------------------------
+
+-------------------------
+------- BEFORE ----------
+------- AFTER -----------
+-------------------------
+
+------------------------------------
+--------------- OLD , NEW -------------
+------ FROM EACH ROW , FROM STATEMENT ----
+-----------------------------------------
+
+
+CREATE TABLE books_count  (id SERIAL PRIMARY KEY, count INTEGER);
+INSERT INTO books_count (count) VALUES(2);
+SELECT * FROM books_count;
+
+
+---------------- INSERT FUNCTION AND TRIGGER -----------------
+INSERT INTO books (book_name, page_number) VALUES ('daftar',24);
+SELECT * From books;
+SELECT * FROM books_count;
+CREATE OR REPLACE FUNCTION on_books_insert()
+RETURNS TRIGGER
+LANGUAGE Plpgsql
+as 
+$$
+BEGIN 
+      UPDATE books_count SET count = count + 1;
+      RETURN NEW;
+END
+$$;
+
+CREATE TRIGGER on_books_insert_trigger
+AFTER INSERT on books
+FOR EACH ROW 
+EXECUTE PROCEDURE on_books_insert();
+
+
+
+--------------- DELETE FUNCTION AND TRIGGER -------------------
+DELETE FROM books WHERE book_name = 'kitob3';
+SELECT * From books;
+SELECT * FROM books_count;
+CREATE OR REPLACE FUNCTION on_books_delete()
+RETURNS TRIGGER
+LANGUAGE PLPGSQL
+as 
+$$
+BEGIN 
+       UPDATE books_count SET count = count - 1;
+       RETURN OLD ;
+END 
+$$;
+
+CREATE TRIGGER on_books_delete_trigger
+AFTER DELETE ON books
+FOR EACH ROW 
+EXECUTE PROCEDURE on_books_delete();
+
+------------- UPDATE FUNCTION AND TRIGGER -----------------
+UPDATE books SET book_name='daftarcha' WHERE id = 4;
+SELECT * From books;
+SELECT * FROM book_name_history;
+CREATE table book_name_history
+(id SERIAL PRIMARY KEY, old_name TEXT , new_name TEXT, date DATE);
+
+CREATE OR REPLACE FUNCTION on_book_update()
+RETURNS TRIGGER
+LANGUAGE PLPGSQL
+AS
+$$
+BEGIN 
+        IF OLD.book_name <> NEW.boo_name THEN
+        INSERT INTO book_name_history(id, old_name,new_name,date) 
+        VALUES (OLD.id , OLD.book_name , NEW.book_name , now());
+        END IF:
+     RETURN NEW;  
+END 
+$$;
+
+CREATE TRIGGER on_books_update_trigger
+AFTER UPDATE
+ON books
+FOR EACH ROW
+EXECUTE PROCEDURE on_book_update();
+
+------- TRUNCATE that deletes all date in a table ---------
+TRUNCATE book_name_history;
+
+---------------------------- FROM STATEMENT ---------------------------
+INSERT INTO books (book_name, page_number) VALUES ('sariq dev',34),('hoshimjon',6789 );
+SELECT * From books; 
+SELECT * FROM books_count;
+CREATE OR REPLACE FUNCTION on_books_insert_count()
+RETURNS TRIGGER
+LANGUAGE Plpgsql
+as 
+$$
+DECLARE C INTEGER;
+BEGIN 
+    SELECT count(*) INTO c FROM books;
+      UPDATE books_count SET count = c;
+      RETURN OLD;
+END
+$$;
+
+CREATE TRIGGER on_books_insert_count
+AFTER INSERT on books
+FOR STATEMENT
+EXECUTE PROCEDURE on_books_insert_count();

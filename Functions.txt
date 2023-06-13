@@ -1,0 +1,144 @@
+﻿-- Create table --
+CREATE TABLE users (id SERIAL PRIMARY KEY , user_name TEXT NOT NULL);
+CREATE Table technologies (id SERIAL PRIMARY KEY, techno_name TEXT NOT NULL , user_id INTEGER );
+
+-- DROP TABLES -- 
+DROP TABLE users;
+DROP TABLE technologies;
+
+-- SELECT COLUMNS --
+SELECT * FROM users;
+SELECT * FROM technologies;
+SELECT * FROM technologies WHERE user_id = 2;
+
+-- INSERT DATA--
+INSERT INTO users (user_name) VALUES ('Jasurbek'), ('Javohir'), ('Sarvar'), ('Doston');
+INSERT INTO technologies (techno_name, user_id) VALUES ('laptop', 1) , ('tablet', 1), ('computer', 3), ('camera', 2),('headphone', 3),('phone', 2),('airphone',3);
+
+-- FULL JOIN --
+SELECT * FROM users 
+FULL JOIN technologies
+ON users.id = technologies.user_id;
+
+-- LEFT JOIN --
+SELECT user_name, techno_name FROM users 
+FULL JOIN technologies 
+ON users.id = technologies.user_id 
+WHERE users.id IS NOT NULL;
+
+-- RIGHT JOIN --
+SELECT user_name , techno_name FROM technologies as t 
+FULL JOIN users AS u 
+ON u.id = t.user_id 
+WHERE t.id IS NOT NULL;
+
+-- INNER JOIN --
+SELECT user_name , techno_name FROM users as u 
+FULL JOIN technologies As t 
+ON t.user_id = u.id 
+WHERE t.user_id is NOT NULL 
+AND u.id IS NOT NULL; 
+
+-- LEFT JOIN -- 
+SELECT  user_name, techno_name  FROM users 
+LEFT JOIN technologies 
+ON users.id = technologies.user_id;
+
+-- RIGHT JOIN -- 
+SELECT user_name, techno_name FROM users
+RIGHT JOIN technologies 
+ON users.id = technologies.user_id;
+
+-------------------- FUNCTION ----------------------
+SELECT * from users_count();
+
+CREATE  OR REPLACE FUNCTION  users_count()
+RETURNS INTEGER 
+LANGUAGE PLPGSQL 
+AS 
+$$ 
+DECLARE c INTEGER;
+BEGIN 
+SELECT count(*) into c FROM users;
+RETURN c;
+END
+$$;
+-------------------------------
+
+SELECT * FROM get_user_name();
+CREATE OR REPLACE FUNCTION get_user_name()
+RETURNS TEXT
+LANGUAGE PLPGSQL
+AS
+$$
+DECLARE ism TEXT;
+BEGIN 
+SELECT user_name INTO ism FROM users WHERE id = 1;
+RETURN ism;
+END
+$$;
+
+---------------------------------------
+ -- get user techno query with get user techno function 
+SELECT * FROM get_user_techno_view;
+
+CREATE OR REPLACE VIEW  get_user_techno_view
+AS
+SELECT user_name, techno_name FROM users
+FULL JOIN technologies
+ON technologies.user_id = users.id
+WHERE users.id IS NOT NULL AND 
+technologies.user_id IS NOT NULL
+ORDER BY users.id;
+
+SELECT * FROM get_user_technos(3);
+CREATE OR REPLACE FUNCTION get_user_technos(a INTEGER)
+RETURNS TABLE  (name TEXT , techno_name TEXT)
+LANGUAGE plpgsql
+AS 
+$$
+BEGIN
+RETURN QUERY
+SELECT * FROM get_user_techno_view LIMIT a;
+END
+$$;
+
+---------------------------------------------
+
+CREATE OR REPLACE FUNCTION top_users(count integer)
+RETURNS TABLE(id integer, name text)
+language plpgsql
+AS
+$$
+BEGIN
+
+   RETURN QUERY
+      SELECT users.id, users.user_name FROM users LIMIT count; 
+
+END
+$$;
+
+SELECT * FROM top_users(2);
+
+----------------------------------
+-- procedura ---
+
+CREATE or REPLACE PROCEDURE user_technos(userid INTEGER, n text, l INTEGER)
+LANGUAGE PLPGSQL
+AS
+$$
+DECLARE c INTEGER;
+BEGIN
+   SELECT count(*) into c from users_count();
+
+   IF c > l THEN
+      UPDATE users set user_name=n  WHERE users.id = userid;
+   end if;
+END
+$$;
+
+SELECT * from users;
+
+CALL user_technos(1, 'ali1', 0);
+
+SELECT * From users;

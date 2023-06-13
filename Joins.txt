@@ -1,0 +1,60 @@
+﻿-- CREATE --
+CREATE TABLE IF NOT EXISTS readers(id SERIAL PRIMARY KEY, user_name TEXT NOT NULL, level TEXT DEFAULT 'beginner');
+
+CREATE TABLE IF NOT EXISTS books(id SERIAL PRIMARY KEY, book_name TEXT NOT NULL, is_taken BOOLEAN DEFAULT false);
+
+CREATE TABLE IF NOT EXISTS readers_books(id SERIAL PRIMARY KEY, reader_id INTEGER , book_id INTEGER);
+
+-- DROP-- 
+DROP TABLE readers;
+
+DROP TABLE books;
+
+DROP TABLE readers_books;
+
+-- SELECT --
+SELECT * FROM readers;
+
+SELECT * FROM books;
+
+SELECT * FROM readers_books;
+
+-- INSERT --
+INSERT INTO readers (user_name,level) VALUES ('Jasmina', 'junior');
+
+INSERT INTO books (book_name, is_taken) Values ('chinor', true);
+
+INSERT INTO readers_books (reader_id, book_id) VALUES (1,2),(1,1),(2,2),(2,3),(2,4);
+
+-- FULL JOIN --
+-- select all readers either they have books or not with all books either they have readers or not--
+SELECT user_name, book_name FROM readers As r
+FULL JOIN readers_books As r_b
+ON r.id = r_b.reader_id
+FULL JOIN books As b
+ON r_b.book_id = b.id;
+
+-- select only readers who have books  and books who have readers, not nullable -- 
+SELECT user_name, book_name From readers AS r
+FULL JOIN readers_books As r_b 
+On r.id = r_b.reader_id 
+FULL JOIN books as b 
+ON r_b.book_id = b.id 
+WHERE r_b.reader_id IS NOT NULL AND 
+r_b.book_id IS NOT NULL;
+
+
+-- it is as same as above one (not nullable table) -- 
+SELECT user_name, book_name FROM readers AS r
+INNER JOIN readers_books AS r_b 
+ON r.id = r_b.reader_id 
+INNER JOIN books AS b
+ON r_b.book_id = b.id;
+
+-- nullable tables -- select books and readers that have no pairs
+SELECT book_name , user_name FROM books AS b 
+FULL JOIN readers_books AS r_b 
+ON b.id = r_b.book_id 
+FULL JOIN readers AS r 
+ON r.id = r_b.reader_id
+Where r_b.reader_id IS NULL;

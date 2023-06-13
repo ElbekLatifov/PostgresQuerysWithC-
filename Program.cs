@@ -13,9 +13,9 @@ var users = await db.humans.FromSqlRaw("SELECT * FROM humans ORDER BY name;").To
 var sonlar = await db.humans.Select(x => x.Name).OrderByDescending(p=>p.StartsWith('a')).ToListAsync();
 
 var names = await db.humans
-    .Where(u => u.Age > 18 || u.Name == "ali")
+    .Where(u => u.Age > 20 || u.Name == "elbek")
     .OrderBy(u => u.Age)
-    .Take(1)
+    .Take(4)
     .Select(u => new { u.Id, u.Name })
     .ToListAsync();
 
